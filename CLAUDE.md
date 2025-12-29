@@ -2,6 +2,43 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## ⚠️ 필수: 에이전트 활용 지침
+
+**사업계획서 작성 시 반드시 Task 도구를 사용하여 에이전트를 활용해야 합니다.**
+
+### 에이전트 호출 방법
+
+Claude Code의 `Task` 도구를 사용하여 다음 에이전트들을 호출하세요:
+
+```
+# 시장 조사 시
+Task tool → subagent_type: "deep-research"
+
+# 사업계획서 작성 시
+Task tool → subagent_type: "business-plan-writer"
+
+# 이미지 생성 시
+Task tool → subagent_type: "image-generator"
+```
+
+### 필수 에이전트 활용 순서
+
+1. **시장 조사**: `deep-research` 에이전트로 TAM/SAM/SOM, 경쟁사 분석 수행
+2. **사업계획서 작성**: `business-plan-writer` 에이전트로 양식에 맞춘 문서 작성
+3. **이미지 생성**: `image-generator` 에이전트로 Mermaid 변환 및 AI 이미지 생성
+
+### 에이전트 미사용 시 문제점
+
+- 시장 데이터 누락 또는 부정확
+- 양식 요구사항 미충족
+- 문서 품질 저하
+
+**반드시 위 순서대로 에이전트를 활용하여 작업을 진행하세요.**
+
+---
+
 ## 프로젝트 개요
 
 사업계획서 및 신청서 등 공식 문서 자동화 프로젝트. PDF 양식을 파싱하여 마크다운으로 변환하고, AI 에이전트 파이프라인을 통해 고품질 문서를 생성한 뒤 최종 Word 문서로 출력한다.
@@ -162,7 +199,7 @@ GOOGLE_API_KEY=your-key-here  # Gemini 이미지 생성용
 문서 완성 전 확인:
 - [ ] 각 섹션 최소 분량 충족
 - [ ] Mermaid 다이어그램 5개 이상
-- [ ] **Mermaid 다이어그램 PNG 이미지 변환 완료** (Word 호환 필수)
+- [ ] Mermaid 다이어그램 PNG 이미지 변환 완료 (Word 호환 필수)
 - [ ] 이미지 생성 가이드라인 2개 이상
 - [ ] AI 생성 이미지 완료 (인포그래픽 등)
 - [ ] 마크다운에서 Mermaid 코드 블록 → 이미지 참조로 교체
