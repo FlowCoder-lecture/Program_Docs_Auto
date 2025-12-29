@@ -13,7 +13,10 @@ RAG_doc/
 ├── SSOT_docs/           # 사용자 기업 정보 및 사업 내용 (Single Source of Truth)
 ├── Program_docs/        # 지원사업 공고문 및 양식 파일 (PDF)
 ├── images/              # 생성된 이미지 저장소
-│   └── mermaid/         # Mermaid 다이어그램 이미지
+│   └── [프로젝트명]/    # 프로젝트별 하위 폴더 (예: LearnAI_예비창업패키지/)
+│       ├── 01_이미지명.png
+│       ├── 02_이미지명.png
+│       └── ...
 ├── .claude/
 │   ├── agents/          # AI 에이전트 정의
 │   └── skills/          # 재사용 가능한 스킬
@@ -54,8 +57,13 @@ Image Generator Agent로 모든 시각 자료 생성:
 python3 .claude/skills/image-generator/scripts/generate_image.py \
   --prompt "장면 설명형 프롬프트 (키워드 나열 X)" \
   --provider gemini \
-  --output ./images/파일명.png
+  --output ./images/[프로젝트명]/01_이미지명.png
 ```
+
+**⚠️ 이미지 저장 규칙 (필수)**:
+- `images/` 하위에 프로젝트별 폴더 생성 (예: `images/LearnAI_예비창업패키지/`)
+- 파일명은 순번_이미지명 형식: `01_organization.png`, `02_market_size.png`
+- 순번은 2자리 숫자로 패딩: `01`, `02`, ... `10`, `11`
 
 **프롬프트 핵심 원칙**:
 - 장면을 설명하라, 키워드를 나열하지 마라
@@ -89,10 +97,13 @@ python3 .claude/skills/image-generator/scripts/generate_image.py \
 ```bash
 # 환경변수 로드 후 실행
 source .env
+
+# 프로젝트 폴더 생성 후 순번_이름 형식으로 저장
+mkdir -p ./images/프로젝트명/
 python3 .claude/skills/image-generator/scripts/generate_image.py \
   --prompt "프롬프트" \
   --provider gemini \
-  --output ./images/output.png
+  --output ./images/프로젝트명/01_이미지명.png
 ```
 
 ### Word 문서 변환 (docx 스킬)
