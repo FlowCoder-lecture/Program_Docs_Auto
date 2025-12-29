@@ -1,0 +1,21 @@
+# Environment variables (contains API keys)
+.env
+
+# OS generated files
+.DS_Store
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Node
+node_modules/
+
+# Test outputs
+test_*.png
