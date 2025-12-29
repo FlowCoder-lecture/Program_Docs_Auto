@@ -52,8 +52,19 @@ Business Plan Agent가 양식에 맞춰 작성:
 
 ### 5. 이미지 생성
 Image Generator Agent로 모든 시각 자료 생성:
+
+#### 5-1. Mermaid 다이어그램 → PNG 변환 (필수)
+```bash
+# Mermaid 코드 블록을 .mmd 파일로 추출 후 변환
+mmdc -i diagram.mmd -o ./images/[프로젝트명]/mermaid_01_서비스플로우.png -b white
+
+# Word에서는 Mermaid 문법이 렌더링되지 않으므로 반드시 이미지 변환 필요
+```
+
+#### 5-2. AI 이미지 생성 (인포그래픽 등)
 ```bash
 # .env에서 GOOGLE_API_KEY 로드 필요
+export GOOGLE_API_KEY="your-key"
 python3 .claude/skills/image-generator/scripts/generate_image.py \
   --prompt "장면 설명형 프롬프트 (키워드 나열 X)" \
   --provider gemini \
@@ -62,7 +73,8 @@ python3 .claude/skills/image-generator/scripts/generate_image.py \
 
 **⚠️ 이미지 저장 규칙 (필수)**:
 - `images/` 하위에 프로젝트별 폴더 생성 (예: `images/LearnAI_예비창업패키지/`)
-- 파일명은 순번_이미지명 형식: `01_organization.png`, `02_market_size.png`
+- Mermaid 이미지: `mermaid_[순번]_[설명].png`
+- AI 생성 이미지: `[순번]_[설명].png`
 - 순번은 2자리 숫자로 패딩: `01`, `02`, ... `10`, `11`
 
 **프롬프트 핵심 원칙**:
@@ -127,6 +139,17 @@ pandoc input.md -o output.docx
 | `quadrantChart` | 경쟁 포지셔닝 |
 | `graph TB` | 조직 구조 |
 
+## Mermaid 다이어그램 이미지 변환 (필수)
+
+**⚠️ Word 문서 호환성**: Mermaid 문법은 Word에서 렌더링되지 않습니다. 최종 문서 생성 전 **반드시** PNG 이미지로 변환해야 합니다.
+
+```bash
+# 기본 변환 명령어
+mmdc -i diagram.mmd -o ./images/프로젝트명/mermaid_01_설명.png -b white
+```
+
+**상세 가이드**: `.claude/agents/image-generator.md` 참조
+
 ## API 설정
 
 `.env` 파일에 API 키 설정:
@@ -139,7 +162,9 @@ GOOGLE_API_KEY=your-key-here  # Gemini 이미지 생성용
 문서 완성 전 확인:
 - [ ] 각 섹션 최소 분량 충족
 - [ ] Mermaid 다이어그램 5개 이상
+- [ ] **Mermaid 다이어그램 PNG 이미지 변환 완료** (Word 호환 필수)
 - [ ] 이미지 생성 가이드라인 2개 이상
-- [ ] 모든 이미지 생성 완료
+- [ ] AI 생성 이미지 완료 (인포그래픽 등)
+- [ ] 마크다운에서 Mermaid 코드 블록 → 이미지 참조로 교체
 - [ ] 이미지 경로 최종 문서에 반영
 - [ ] Word 문서 변환 완료

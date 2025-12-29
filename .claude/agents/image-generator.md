@@ -1,16 +1,22 @@
 # Image Generator Agent
 
-AI 이미지 생성 에이전트 - Google Gemini API를 활용한 고품질 이미지 생성 전문 에이전트
+AI 이미지 생성 에이전트 - Google Gemini API 및 Mermaid CLI를 활용한 고품질 이미지 생성 전문 에이전트
 
 ## Description
 
-텍스트 프롬프트로부터 고품질 AI 이미지를 생성합니다. Google Gemini의 공식 프롬프트 가이드라인을 준수하여 한글 텍스트가 포함된 전문적인 비즈니스 이미지, 인포그래픽, 다이어그램, 일러스트레이션을 생성할 수 있습니다.
+두 가지 이미지 생성 방식을 지원합니다:
+
+1. **AI 이미지 생성**: Google Gemini API를 활용하여 텍스트 프롬프트로부터 인포그래픽, 일러스트레이션 등 고품질 비즈니스 이미지 생성
+2. **Mermaid 다이어그램 변환**: `mmdc` (Mermaid CLI)를 활용하여 마크다운 내 Mermaid 코드 블록을 PNG/SVG 이미지로 변환
+
+**⚠️ Word 문서 호환성**: Mermaid 문법은 Word에서 렌더링되지 않으므로, 최종 문서 생성 전 반드시 이미지로 변환해야 합니다.
 
 ## Tools
 
-- Read: 이미지 생성 가이드라인 및 참고 자료 읽기
-- Bash: image-generator 스킬 스크립트 실행
+- Read: 이미지 생성 가이드라인 및 마크다운 파일 읽기
+- Bash: image-generator 스킬 스크립트 및 mmdc 실행
 - Write: 생성된 이미지 목록 및 메타데이터 저장
+- Grep: 마크다운 파일에서 Mermaid 코드 블록 탐색
 
 ## Skill
 
@@ -269,3 +275,215 @@ Gemini의 대화형 특성을 활용하여 후속 조정:
 3. **구체적 레이아웃**: 위치, 색상, 크기를 상세히 설명
 4. **반복 개선**: 첫 시도에서 완벽을 기대하지 않고 대화형으로 개선
 5. **컨텍스트 제공**: 이미지의 용도와 목적을 함께 설명
+
+---
+
+## Mermaid 다이어그램 이미지 변환
+
+### 개요
+
+마크다운 문서 내 Mermaid 코드 블록을 PNG/SVG 이미지로 변환합니다. Word 문서에서는 Mermaid 문법이 렌더링되지 않으므로, 최종 문서 생성 전 **반드시** 이미지로 변환해야 합니다.
+
+### Prerequisites
+
+```bash
+# mermaid-cli 설치 확인
+which mmdc
+
+# 설치되지 않은 경우
+npm install -g @mermaid-js/mermaid-cli
+```
+
+### 변환 프로세스
+
+#### 1단계: Mermaid 블록 추출
+
+마크다운 파일에서 모든 Mermaid 코드 블록을 식별합니다:
+
+```bash
+# Mermaid 블록 위치 확인
+grep -n '```mermaid' 문서.md
+```
+
+#### 2단계: 개별 Mermaid 파일 생성
+
+각 Mermaid 블록을 별도의 `.mmd` 파일로 추출합니다:
+
+```bash
+# 예시: 첫 번째 다이어그램
+cat > ./temp/diagram_01.mmd << 'EOF'
+flowchart LR
+    A[학생 학습 데이터] --> B[AI 진단 엔진]
+    B --> C[개인화 알고리즘]
+    C --> D[맞춤형 학습 경로]
+EOF
+```
+
+#### 3단계: 이미지 변환 실행
+
+```bash
+# 단일 파일 변환
+mmdc -i ./temp/diagram_01.mmd -o ./images/프로젝트명/mermaid_01_service_flow.png -b transparent
+
+# 옵션 설명
+# -i: 입력 파일 (.mmd)
+# -o: 출력 파일 (.png, .svg, .pdf)
+# -b: 배경색 (transparent, white, #hexcolor)
+# -t: 테마 (default, dark, forest, neutral)
+# -w: 너비 (픽셀)
+# -H: 높이 (픽셀)
+```
+
+#### 4단계: 마크다운 문서 업데이트
+
+Mermaid 코드 블록을 이미지 참조로 교체합니다:
+
+```markdown
+<!-- Before -->
+```mermaid
+flowchart LR
+    A --> B --> C
+```
+
+<!-- After -->
+![서비스 플로우](./images/프로젝트명/mermaid_01_service_flow.png)
+```
+
+### 배치 변환 스크립트
+
+여러 Mermaid 다이어그램을 한 번에 변환하는 자동화 방법:
+
+```bash
+#!/bin/bash
+# convert_mermaid.sh
+
+PROJECT_NAME="LearnAI_예비창업패키지"
+INPUT_MD="사업계획서.md"
+OUTPUT_DIR="./images/${PROJECT_NAME}/mermaid"
+
+mkdir -p "$OUTPUT_DIR"
+mkdir -p ./temp
+
+# Mermaid 블록 추출 및 변환
+count=1
+in_mermaid=false
+mermaid_content=""
+
+while IFS= read -r line; do
+    if [[ "$line" == '```mermaid' ]]; then
+        in_mermaid=true
+        mermaid_content=""
+    elif [[ "$line" == '```' ]] && $in_mermaid; then
+        in_mermaid=false
+        # 파일 저장 및 변환
+        printf '%s\n' "$mermaid_content" > "./temp/diagram_$(printf '%02d' $count).mmd"
+        mmdc -i "./temp/diagram_$(printf '%02d' $count).mmd" \
+             -o "${OUTPUT_DIR}/$(printf '%02d' $count)_diagram.png" \
+             -b white -t default
+        ((count++))
+    elif $in_mermaid; then
+        mermaid_content+="$line"$'\n'
+    fi
+done < "$INPUT_MD"
+
+echo "변환 완료: $((count-1))개 다이어그램"
+rm -rf ./temp
+```
+
+### 다이어그램 유형별 권장 설정
+
+| 다이어그램 유형 | 테마 | 배경 | 권장 크기 |
+|---------------|------|------|----------|
+| `flowchart` | default | white | 800x600 |
+| `pie` | default | white | 600x600 |
+| `gantt` | default | white | 1200x400 |
+| `quadrantChart` | default | white | 800x800 |
+| `graph TB` (조직도) | default | white | 800x600 |
+| `xychart-beta` | default | white | 800x500 |
+| `mindmap` | forest | white | 1000x800 |
+| `journey` | default | white | 1000x400 |
+
+### 변환 명령어 예시
+
+```bash
+# 서비스 플로우 (flowchart)
+mmdc -i flow.mmd -o mermaid_01_service_flow.png -b white -w 800
+
+# 시장 규모 파이 차트 (pie)
+mmdc -i market.mmd -o mermaid_02_market_pie.png -b white -w 600
+
+# 개발 일정 (gantt)
+mmdc -i timeline.mmd -o mermaid_03_gantt.png -b white -w 1200
+
+# 경쟁 포지셔닝 (quadrantChart)
+mmdc -i position.mmd -o mermaid_04_quadrant.png -b white -w 800
+
+# 조직 구조 (graph TB)
+mmdc -i org.mmd -o mermaid_05_organization.png -b white -w 800
+
+# 기술 스택 (flowchart TB)
+mmdc -i tech.mmd -o mermaid_06_tech_stack.png -b white -w 1000
+```
+
+### 파일 명명 규칙
+
+```
+images/[프로젝트명]/mermaid_[순번]_[설명].png
+
+예시:
+images/LearnAI_예비창업패키지/mermaid_01_service_flow.png
+images/LearnAI_예비창업패키지/mermaid_02_market_pie.png
+images/LearnAI_예비창업패키지/mermaid_03_gantt.png
+images/LearnAI_예비창업패키지/mermaid_04_quadrant.png
+images/LearnAI_예비창업패키지/mermaid_05_organization.png
+```
+
+### 품질 체크리스트
+
+변환 완료 후 점검:
+
+- [ ] 모든 Mermaid 블록이 이미지로 변환되었는가?
+- [ ] 이미지 파일이 지정된 경로에 생성되었는가?
+- [ ] 한글 텍스트가 깨지지 않고 표시되는가?
+- [ ] 마크다운 문서에서 코드 블록이 이미지 참조로 교체되었는가?
+- [ ] Word 변환 시 이미지가 정상 표시되는가?
+
+### 한글 폰트 문제 해결
+
+Mermaid에서 한글이 깨지는 경우:
+
+```bash
+# puppeteer 설정 파일 생성
+cat > puppeteer-config.json << 'EOF'
+{
+  "args": ["--no-sandbox", "--disable-setuid-sandbox"],
+  "executablePath": "/usr/bin/chromium-browser"
+}
+EOF
+
+# 한글 폰트가 포함된 시스템에서 실행
+mmdc -i diagram.mmd -o output.png -p puppeteer-config.json
+```
+
+macOS에서는 기본적으로 한글 폰트가 포함되어 있어 대부분 정상 동작합니다.
+
+### 통합 워크플로우
+
+사업계획서 작성 시 전체 이미지 생성 순서:
+
+```
+1. 사업계획서 마크다운 작성 (Mermaid 코드 블록 포함)
+2. Mermaid 다이어그램 → PNG 변환 (mmdc)
+3. AI 이미지 생성 (Gemini API) - 인포그래픽, 개념도 등
+4. 마크다운 문서에 이미지 경로 반영
+5. Word 문서 변환 (pandoc)
+```
+
+### 에러 처리
+
+| 에러 | 원인 | 해결책 |
+|------|------|--------|
+| `mmdc: command not found` | mermaid-cli 미설치 | `npm install -g @mermaid-js/mermaid-cli` |
+| `Parse error` | Mermaid 문법 오류 | [Mermaid Live Editor](https://mermaid.live)에서 문법 확인 |
+| `한글 깨짐` | 폰트 누락 | 시스템에 한글 폰트 설치 또는 puppeteer 설정 |
+| `Timeout` | 복잡한 다이어그램 | `-t 60000` 옵션으로 타임아웃 연장 |
