@@ -49,15 +49,31 @@ Task tool → subagent_type: "image-generator"
 RAG_doc/
 ├── SSOT_docs/           # 사용자 기업 정보 및 사업 내용 (Single Source of Truth)
 ├── Program_docs/        # 지원사업 공고문 및 양식 파일 (PDF)
-├── images/              # 생성된 이미지 저장소
-│   └── [프로젝트명]/    # 프로젝트별 하위 폴더 (예: LearnAI_예비창업패키지/)
-│       ├── 01_이미지명.png
-│       ├── 02_이미지명.png
-│       └── ...
+├── outputs/             # ⭐ 모든 결과물 저장소 (프로젝트별 폴더링)
+│   └── [프로젝트명]_[프로그램명]/    # 예: LearnAI_예비창업패키지/
+│       ├── 사업계획서.md            # 마크다운 원본
+│       ├── 사업계획서.docx          # 최종 Word 문서
+│       ├── 시장조사_보고서.md       # 시장 조사 결과
+│       ├── 양식_converted.md       # PDF 양식 변환 결과
+│       └── images/                 # 이미지 파일
+│           ├── mermaid_01_*.png
+│           └── 01_*.png
 ├── .claude/
 │   ├── agents/          # AI 에이전트 정의
 │   └── skills/          # 재사용 가능한 스킬
 └── .env                 # API 키 (GOOGLE_API_KEY 등)
+```
+
+### 출력 경로 규칙 (필수)
+
+모든 에이전트는 결과물을 `outputs/` 하위 프로젝트 폴더에 저장해야 합니다:
+
+```bash
+# 프로젝트 폴더 생성
+mkdir -p outputs/[프로젝트명]_[프로그램명]/images/
+
+# 예시
+mkdir -p outputs/LearnAI_예비창업패키지/images/
 ```
 
 ## 문서 작성 워크플로우
@@ -68,12 +84,27 @@ RAG_doc/
 - `@SSOT_docs`: 사용자 기업 정보 및 사업 내용 확인
 - `@Program_docs`: 공고문과 양식 파일 확인
 
-### 2. PDF 양식 변환 (양식이 PDF인 경우)
+### 2. PDF 양식 변환 (필수 - PDF 양식이 있는 경우)
+
+**⚠️ 이 단계는 선택이 아닌 필수입니다**
+
+Program_docs에 PDF 신청서/양식이 있으면 반드시 변환:
+
 ```bash
-# pdf-to-markdown 스킬 사용
-# Read 도구로 PDF 읽기 → 마크다운 구조로 변환
+# 1. PDF 파일 확인
+ls Program_docs/*.pdf
+
+# 2. pdf-to-markdown 스킬로 변환
+# Read 도구로 PDF 읽기 → 구조화된 마크다운으로 변환
+
+# 3. 출력 경로
+outputs/[프로젝트명]_[프로그램명]/양식_converted.md
 ```
-출력: `[파일명]_converted.md`
+
+**변환 결과물 활용:**
+- 변환된 양식의 섹션 구조를 그대로 따름
+- `**[입력: ...]**` 표시된 필드에 SSOT 정보 채움
+- 모든 필수 항목이 빠짐없이 작성되었는지 확인
 
 ### 3. 시장 조사
 Deep Research Agent 실행하여 관련 조사 수행:
@@ -93,7 +124,7 @@ Image Generator Agent로 모든 시각 자료 생성:
 #### 5-1. Mermaid 다이어그램 → PNG 변환 (필수)
 ```bash
 # Mermaid 코드 블록을 .mmd 파일로 추출 후 변환
-mmdc -i diagram.mmd -o ./images/[프로젝트명]/mermaid_01_서비스플로우.png -b white
+mmdc -i diagram.mmd -o ./outputs/[프로젝트명]_[프로그램명]/images/mermaid_01_서비스플로우.png -b white
 
 # Word에서는 Mermaid 문법이 렌더링되지 않으므로 반드시 이미지 변환 필요
 ```
@@ -105,11 +136,12 @@ export GOOGLE_API_KEY="your-key"
 python3 .claude/skills/image-generator/scripts/generate_image.py \
   --prompt "장면 설명형 프롬프트 (키워드 나열 X)" \
   --provider gemini \
-  --output ./images/[프로젝트명]/01_이미지명.png
+  --output ./outputs/[프로젝트명]_[프로그램명]/images/01_이미지명.png
 ```
 
 **⚠️ 이미지 저장 규칙 (필수)**:
-- `images/` 하위에 프로젝트별 폴더 생성 (예: `images/LearnAI_예비창업패키지/`)
+- `outputs/[프로젝트명]_[프로그램명]/images/` 폴더에 저장
+- 예: `outputs/LearnAI_예비창업패키지/images/`
 - Mermaid 이미지: `mermaid_[순번]_[설명].png`
 - AI 생성 이미지: `[순번]_[설명].png`
 - 순번은 2자리 숫자로 패딩: `01`, `02`, ... `10`, `11`
@@ -121,7 +153,7 @@ python3 .claude/skills/image-generator/scripts/generate_image.py \
 
 ### 6. 최종 문서 생성
 - 이미지 경로가 반영된 최종 `.md` 문서 작성
-- docx 스킬로 Word 문서 변환
+- mark-docx 스킬로 Word 문서 변환 (이미지 자동 임베딩)
 
 ## 에이전트 (`.claude/agents/`)
 
@@ -138,30 +170,44 @@ python3 .claude/skills/image-generator/scripts/generate_image.py \
 |------|------|
 | `pdf-to-markdown/` | PDF 양식을 마크다운으로 변환 |
 | `image-generator/` | AI 이미지 생성 스크립트 |
-| `docx/` | 마크다운을 Word 문서로 변환 |
+| `mark-docx/` | 마크다운을 고품질 Word 문서로 변환 (docx-js 기반) |
 
 ## 필수 명령어
+
+### 프로젝트 폴더 초기화
+```bash
+# 새 프로젝트 시작 시 먼저 출력 폴더 생성
+mkdir -p ./outputs/[프로젝트명]_[프로그램명]/images/
+
+# 예시
+mkdir -p ./outputs/LearnAI_예비창업패키지/images/
+```
 
 ### 이미지 생성
 ```bash
 # 환경변수 로드 후 실행
 source .env
 
-# 프로젝트 폴더 생성 후 순번_이름 형식으로 저장
-mkdir -p ./images/프로젝트명/
+# outputs 폴더 내 프로젝트 이미지 폴더에 저장
 python3 .claude/skills/image-generator/scripts/generate_image.py \
   --prompt "프롬프트" \
   --provider gemini \
-  --output ./images/프로젝트명/01_이미지명.png
+  --output ./outputs/[프로젝트명]_[프로그램명]/images/01_이미지명.png
 ```
 
-### Word 문서 변환 (docx 스킬)
+### Word 문서 변환 (mark-docx 스킬)
 ```bash
-# docx-js 사용 (Node.js)
-node .claude/skills/docx/scripts/create_docx.js input.md output.docx
+# 고품질 마크다운 → DOCX 변환 (권장)
+node .claude/skills/mark-docx/scripts/md-to-docx.js \
+  ./outputs/[프로젝트명]_[프로그램명]/사업계획서.md \
+  ./outputs/[프로젝트명]_[프로그램명]/사업계획서.docx \
+  --images-dir=./outputs/[프로젝트명]_[프로그램명]/images
 
-# 또는 pandoc
-pandoc input.md -o output.docx
+# 특징:
+# - 한글 비즈니스 문서 최적화 (맑은 고딕)
+# - 이미지 자동 임베딩
+# - 테이블, 리스트, 체크박스 완벽 지원
+# - 전문적인 스타일링 (헤더, 색상, 여백)
 ```
 
 ## Mermaid 다이어그램 필수 유형
@@ -182,7 +228,11 @@ pandoc input.md -o output.docx
 
 ```bash
 # 기본 변환 명령어
-mmdc -i diagram.mmd -o ./images/프로젝트명/mermaid_01_설명.png -b white
+mmdc -i diagram.mmd -o ./outputs/[프로젝트명]_[프로그램명]/images/mermaid_01_설명.png -b white
+
+# 모든 mmd 파일 일괄 변환
+cd ./outputs/[프로젝트명]_[프로그램명]/images/
+for f in *.mmd; do mmdc -i "$f" -o "${f%.mmd}.png" -b white; done
 ```
 
 **상세 가이드**: `.claude/agents/image-generator.md` 참조
@@ -203,5 +253,6 @@ GOOGLE_API_KEY=your-key-here  # Gemini 이미지 생성용
 - [ ] 이미지 생성 가이드라인 2개 이상
 - [ ] AI 생성 이미지 완료 (인포그래픽 등)
 - [ ] 마크다운에서 Mermaid 코드 블록 → 이미지 참조로 교체
+- [ ] **⚠️ 표 안에 이미지 없음 확인** (표 안 이미지는 깨짐)
 - [ ] 이미지 경로 최종 문서에 반영
 - [ ] Word 문서 변환 완료

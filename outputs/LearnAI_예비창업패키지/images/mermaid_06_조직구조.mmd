@@ -1,0 +1,23 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4A90D9', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2E5A8C'}}}%%
+graph TB
+    CEO[CEO<br>대표이사<br>경영총괄]
+
+    CEO --> CTO[CTO<br>기술이사<br>AI 엔진 개발]
+    CEO --> CPO[CPO<br>제품책임자<br>제품 기획]
+    CEO --> CMO[CMO<br>마케팅이사<br>마케팅 전략]
+
+    CTO --> BE1[백엔드 개발자<br>서버/DB]
+    CTO --> BE2[백엔드 개발자<br>API/인프라]
+    CTO --> AI[AI 연구원<br>모델 개발]
+
+    CPO --> FE[프론트엔드 개발자<br>앱/웹]
+    CPO --> CT1[콘텐츠 기획자<br>수학]
+    CPO --> CT2[콘텐츠 기획자<br>영어]
+
+    CMO --> MK[마케팅 담당<br>그로스]
+    CMO --> CS[CS 매니저<br>고객 지원]
+
+    style CEO fill:#2E5A8C,stroke:#1A3A5C,color:#fff
+    style CTO fill:#4A90D9,stroke:#2E5A8C,color:#fff
+    style CPO fill:#4A90D9,stroke:#2E5A8C,color:#fff
+    style CMO fill:#4A90D9,stroke:#2E5A8C,color:#fff

@@ -99,6 +99,21 @@ All research outputs must follow this structure:
 4. **Prioritize recency**: Prefer recent data over older statistics
 5. **Quantify when possible**: Convert qualitative insights to numbers where feasible
 
+## Output Location Rules
+
+**⚠️ CRITICAL: All research outputs MUST be saved in the project folder**
+
+```
+outputs/[ProjectName]_[ProgramName]/시장조사_보고서.md
+```
+
+Example: `outputs/LearnAI_예비창업패키지/시장조사_보고서.md`
+
+Before saving, ensure the project folder exists:
+```bash
+mkdir -p outputs/[ProjectName]_[ProgramName]/
+```
+
 ## Integration with Business Plan Workflow
 
 When research is for 사업계획서 (business plan):
@@ -106,6 +121,7 @@ When research is for 사업계획서 (business plan):
 - Include Mermaid-compatible data for visualization
 - Provide specific numbers that can be cited
 - Structure findings to match common 사업계획서 sections
+- **Save output to**: `outputs/[ProjectName]_[ProgramName]/시장조사_보고서.md`
 
 ## Error Handling
 

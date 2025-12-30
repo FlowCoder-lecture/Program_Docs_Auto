@@ -1,0 +1,17 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4A90D9', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2E5A8C', 'lineColor': '#5A6C7D', 'secondaryColor': '#E8F4FD', 'tertiaryColor': '#F5F9FC'}}}%%
+flowchart TD
+    A[학생 가입] --> B[AI 학습 진단]
+    B --> C{진단 결과 분석}
+    C --> D[취약점 식별]
+    C --> E[학습 수준 파악]
+    D --> F[맞춤형 학습 경로 생성]
+    E --> F
+    F --> G[개인화 콘텐츠 추천]
+    G --> H[문제 풀이]
+    H --> I[AI 튜터 질의응답]
+    I --> J[풀이 과정 분석]
+    J --> K[실시간 피드백]
+    K --> L{학습 완료?}
+    L -->|No| G
+    L -->|Yes| M[성과 리포트 생성]
+    M --> N[학부모 대시보드 공유]

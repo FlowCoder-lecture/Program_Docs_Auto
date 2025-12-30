@@ -25,16 +25,67 @@ When creating a business plan, you MUST follow this sequence:
 - Read `@Program_docs` for program announcements and application forms
 - Identify all required sections and formatting requirements
 
-### 2. PDF Form Conversion (if applicable)
-- When the application form is a PDF, convert it to structured markdown
-- Preserve all section headers, numbering, and field requirements
-- Output as `[filename]_converted.md`
+### 2. PDF Form Conversion (MANDATORY when PDF exists)
+
+**⚠️ CRITICAL: This step is REQUIRED, not optional**
+
+Before writing ANY content, you MUST check for PDF forms in Program_docs:
+
+```bash
+# Check for PDF application forms
+ls Program_docs/*.pdf
+```
+
+**If PDF application form exists:**
+
+1. **Use the pdf-to-markdown skill** to convert the form:
+   - Read the PDF using the Read tool
+   - Apply conversion rules from `/pdf-to-markdown` skill
+   - Preserve ALL section headers, numbering, field requirements, and table structures
+
+2. **Output location**: Save converted file to the project output folder:
+   ```
+   outputs/[ProjectName]_[ProgramName]/양식_converted.md
+   ```
+   Example: `outputs/LearnAI_예비창업패키지/양식_converted.md`
+
+3. **Use the converted template** as the structural guide for the business plan:
+   - Follow the exact section order from the converted form
+   - Fill in all required fields marked as `**[입력: ...]**`
+   - Maintain the document hierarchy (H1, H2, H3, etc.)
+
+**Why this step matters:**
+- Government evaluators expect exact format compliance
+- Missing sections result in application rejection
+- Field requirements must match the official form
 
 ### 3. Market Research
-- Conduct deep research on:
-  - Market size (TAM/SAM/SOM with specific numbers)
-  - Competitor analysis (minimum 3-5 competitors)
-  - Industry trends and growth projections
+
+**⚠️ CRITICAL: Check for Existing Research First**
+
+Before conducting ANY new research, you MUST:
+1. Search for existing research files in the project root:
+   - Pattern: `*_시장조사_보고서.md` or `*_market_research.md`
+   - Example: `LearnAI_시장조사_보고서.md`
+2. If existing research exists:
+   - **READ and USE** that file as your primary data source
+   - Do NOT conduct duplicate research
+   - Extract TAM/SAM/SOM, competitor analysis, and trends from the existing report
+3. Only conduct new research if:
+   - No prior research file exists
+   - User explicitly requests fresh research
+   - Existing research is outdated or incomplete for specific sections
+
+**When Using Existing Research:**
+- Read the full report file
+- Extract all market data with sources
+- Use the competitor analysis as-is
+- Reference the existing citations
+
+**When Conducting New Research (only if no existing data):**
+- Market size (TAM/SAM/SOM with specific numbers)
+- Competitor analysis (minimum 3-5 competitors)
+- Industry trends and growth projections
 - Use web search tools for current market data
 - Always cite sources for market statistics
 
@@ -106,11 +157,30 @@ Before completing any business plan:
 
 ## Output Format
 
-Deliver the final business plan as:
-1. Complete markdown document with all sections
-2. Separate `.mmd` files for each Mermaid diagram
-3. Image generation prompts clearly marked
-4. Quality checklist confirmation
+**⚠️ CRITICAL: All outputs MUST be saved in the project folder**
+
+### Output Directory Structure
+```
+outputs/[ProjectName]_[ProgramName]/
+├── 사업계획서.md                    # Main business plan
+├── 사업계획서.docx                  # Final Word document
+├── 시장조사_보고서.md               # Market research report
+├── 양식_converted.md               # Converted PDF form (if applicable)
+└── images/                         # All images
+    ├── mermaid_01_서비스플로우.mmd
+    ├── mermaid_01_서비스플로우.png
+    ├── 01_인포그래픽.png
+    └── ...
+```
+
+Example: `outputs/LearnAI_예비창업패키지/`
+
+### Deliverables
+1. **사업계획서.md**: Complete markdown document with all sections
+2. **images/*.mmd**: Separate Mermaid source files for each diagram
+3. **images/*.png**: Converted PNG images for Word compatibility
+4. **Image generation prompts**: Clearly marked in the markdown
+5. **Quality checklist confirmation**: Verified before completion
 
 ## Error Prevention
 

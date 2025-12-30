@@ -101,3 +101,26 @@ Structure all research outputs as follows:
 - Clearly distinguish between facts, estimates, and projections
 - When data is unavailable, explain what alternatives exist
 - Flag any significant uncertainties or conflicting information
+
+## Output Location Rules
+
+**⚠️ CRITICAL: All research outputs MUST be saved in the project folder**
+
+```
+outputs/[ProjectName]_[ProgramName]/시장조사_보고서.md
+```
+
+Example: `outputs/LearnAI_예비창업패키지/시장조사_보고서.md`
+
+Before saving, ensure the project folder exists:
+```bash
+mkdir -p outputs/[ProjectName]_[ProgramName]/
+```
+
+## Integration with Business Plan Workflow
+
+When research is for 사업계획서 (business plan):
+- Focus on data that supports funding applications
+- Include specific numbers with credible sources
+- Structure findings to match common 사업계획서 sections
+- **Save output to**: `outputs/[ProjectName]_[ProgramName]/시장조사_보고서.md`

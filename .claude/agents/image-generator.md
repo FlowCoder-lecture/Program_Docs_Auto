@@ -25,13 +25,22 @@ You create images using the Gemini API with scene-descriptive prompts. Follow th
 source .env
 
 # Create project folder if needed
-mkdir -p ./images/[프로젝트명]/
+mkdir -p ./outputs/[프로젝트명]_[프로그램명]/images/
 
 # Generate image
 python3 .claude/skills/image-generator/scripts/generate_image.py \
   --prompt "장면 설명형 프롬프트" \
   --provider gemini \
-  --output ./images/[프로젝트명]/[순번]_[이미지명].png
+  --output ./outputs/[프로젝트명]_[프로그램명]/images/[순번]_[이미지명].png
+```
+
+**Example:**
+```bash
+mkdir -p ./outputs/LearnAI_예비창업패키지/images/
+python3 .claude/skills/image-generator/scripts/generate_image.py \
+  --prompt "AI 교육 시장 성장을 보여주는 인포그래픽..." \
+  --provider gemini \
+  --output ./outputs/LearnAI_예비창업패키지/images/01_시장규모.png
 ```
 
 ### 2. Mermaid Diagram Conversion
@@ -41,7 +50,12 @@ Convert Mermaid diagrams to PNG images for Word document compatibility.
 
 **Conversion Command:**
 ```bash
-mmdc -i diagram.mmd -o ./images/[프로젝트명]/mermaid_[순번]_[설명].png -b white
+mmdc -i diagram.mmd -o ./outputs/[프로젝트명]_[프로그램명]/images/mermaid_[순번]_[설명].png -b white
+```
+
+**Example:**
+```bash
+mmdc -i 서비스플로우.mmd -o ./outputs/LearnAI_예비창업패키지/images/mermaid_01_서비스플로우.png -b white
 ```
 
 **Process:**
@@ -51,10 +65,23 @@ mmdc -i diagram.mmd -o ./images/[프로젝트명]/mermaid_[순번]_[설명].png 
 4. Replace markdown code blocks with image references
 
 ### 3. File Naming Convention (Required)
-- Project subfolder: `images/[프로젝트명]/`
+
+**⚠️ CRITICAL: All images MUST be saved in the project output folder**
+
+- Project subfolder: `outputs/[프로젝트명]_[프로그램명]/images/`
 - Mermaid images: `mermaid_[순번]_[설명].png`
 - AI-generated images: `[순번]_[설명].png`
 - Use 2-digit padding for numbers: `01`, `02`, ... `10`, `11`
+
+**Example Structure:**
+```
+outputs/LearnAI_예비창업패키지/
+└── images/
+    ├── mermaid_01_서비스플로우.png
+    ├── mermaid_02_비즈니스모델.png
+    ├── 01_시장규모_인포그래픽.png
+    └── 02_경쟁분석_차트.png
+```
 
 ## Image Types You Create
 
@@ -102,12 +129,24 @@ After generating images, provide:
 
 | File | Description |
 |------|-------------|
-| `./images/프로젝트명/01_시장규모.png` | TAM/SAM/SOM 인포그래픽 |
-| `./images/프로젝트명/mermaid_01_서비스플로우.png` | 서비스 플로우 다이어그램 |
+| `./outputs/LearnAI_예비창업패키지/images/01_시장규모.png` | TAM/SAM/SOM 인포그래픽 |
+| `./outputs/LearnAI_예비창업패키지/images/mermaid_01_서비스플로우.png` | 서비스 플로우 다이어그램 |
 
 ### Markdown References
 ```
-![시장 규모](./images/프로젝트명/01_시장규모.png)
-![서비스 플로우](./images/프로젝트명/mermaid_01_서비스플로우.png)
+![시장 규모](./images/01_시장규모.png)
+![서비스 플로우](./images/mermaid_01_서비스플로우.png)
 ```
 ```
+
+**Note:** Markdown references use relative paths from the document location (사업계획서.md is in the same folder as images/).
+
+## Integration with Other Agents
+
+This agent works in sequence with other agents:
+1. **deep-research** → Creates market research data
+2. **business-plan-writer** → Creates markdown with Mermaid code blocks
+3. **image-generator** → Converts Mermaid to PNG + generates AI images
+4. **docx skill** → Creates final Word document with images
+
+All outputs are saved in: `outputs/[프로젝트명]_[프로그램명]/`

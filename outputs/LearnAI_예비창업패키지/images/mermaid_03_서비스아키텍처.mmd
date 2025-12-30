@@ -1,0 +1,37 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4A90D9', 'primaryTextColor': '#fff'}}}%%
+flowchart TB
+    subgraph Client["클라이언트 레이어"]
+        A1[iOS 앱]
+        A2[Android 앱]
+        A3[웹 브라우저]
+    end
+
+    subgraph API["API 게이트웨이"]
+        B1[REST API]
+        B2[WebSocket]
+    end
+
+    subgraph Core["핵심 서비스"]
+        C1[AI 진단 엔진<br>DKT 기반]
+        C2[학습 경로 생성<br>강화학습]
+        C3[AI 튜터<br>GPT-4 API]
+        C4[분석 대시보드<br>데이터 시각화]
+    end
+
+    subgraph Data["데이터 레이어"]
+        D1[(PostgreSQL<br>사용자 DB)]
+        D2[(MongoDB<br>학습 로그)]
+        D3[(Redis<br>캐시)]
+        D4[(S3<br>콘텐츠 저장)]
+    end
+
+    subgraph External["외부 서비스"]
+        E1[OpenAI API]
+        E2[AWS 인프라]
+    end
+
+    A1 & A2 & A3 --> B1 & B2
+    B1 & B2 --> C1 & C2 & C3 & C4
+    C1 & C2 & C3 & C4 --> D1 & D2 & D3 & D4
+    C3 --> E1
+    Core --> E2
