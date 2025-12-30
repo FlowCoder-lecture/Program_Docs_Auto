@@ -42,6 +42,65 @@ node .claude/skills/mark-docx/scripts/md-to-docx.js <input.md> <output.docx> [--
 
 The script will detect images in table cells and replace them with `[이미지: alt text]` placeholder.
 
+### ⚠️ Critical: Table Separation (표 병합 방지)
+
+**연속 배치된 표는 반드시 분리해야 합니다.** 마크다운에서 표가 연속으로 배치되면 Word 변환 시 하나의 표로 병합될 수 있습니다.
+
+```markdown
+❌ BAD - 연속 표 (병합됨):
+| A | B |
+|---|---|
+| 1 | 2 |
+
+| X | Y | Z |
+|---|---|---|
+| a | b | c |
+
+✅ GOOD - 분리된 표 (제목으로 구분):
+### 첫 번째 표
+
+| A | B |
+|---|---|
+| 1 | 2 |
+
+### 두 번째 표
+
+| X | Y | Z |
+|---|---|---|
+| a | b | c |
+
+✅ GOOD - 분리된 표 (설명으로 구분):
+**첫 번째 데이터**
+
+| A | B |
+|---|---|
+| 1 | 2 |
+
+**두 번째 데이터**
+
+| X | Y | Z |
+|---|---|---|
+| a | b | c |
+```
+
+**표 구분 규칙:**
+1. 각 표 앞에 `###` 제목 또는 `**굵은 설명**` 필수
+2. 빈 데이터 표는 `*해당 없음*` 텍스트로 대체
+3. 표 사이에 최소 1줄의 비-표 텍스트 필요
+
+**디버깅 방법:**
+```bash
+# Word 문서의 표 구조 검증
+python3 -c "
+from docx import Document
+doc = Document('문서.docx')
+for i, table in enumerate(doc.tables):
+    cols = [len(row.cells) for row in table.rows]
+    status = '✅' if len(set(cols)) == 1 else '❌'
+    print(f'{status} 표 {i+1}: {len(table.rows)}행 × {cols[0]}열')
+"
+```
+
 ### Example Usage
 ```bash
 # Convert business plan with images

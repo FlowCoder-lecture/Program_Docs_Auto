@@ -471,11 +471,27 @@ async function convertMarkdownToDocx(inputPath, outputPath, imagesDir) {
 
       // Parse table row
       const cells = line.split('|').slice(1, -1).map(c => c.trim());
+
+      // Check if column count changed (new table detected)
+      if (tableRows.length > 0 && cells.length !== tableRows[0].length) {
+        // Close current table first
+        const table = renderer.createTable(tableRows);
+        if (table) {
+          renderer.children.push(table);
+          renderer.children.push(new Paragraph({ spacing: { after: 200 }, children: [] }));
+          console.log(`📊 표 분리 감지: ${tableRows[0].length}열 → ${cells.length}열 (자동 분리됨)`);
+        }
+        tableRows = [];
+      }
+
       tableRows.push(cells);
 
       // Check if next line is still table
       const nextLine = lines[i + 1] || '';
-      if (!nextLine.includes('|') || !nextLine.trim().startsWith('|')) {
+      const isNextLineTable = nextLine.includes('|') && nextLine.trim().startsWith('|');
+      const isNextLineSeparator = nextLine.match(/^\|[\s\-:|]+\|$/);
+
+      if (!isNextLineTable) {
         // End of table
         if (tableRows.length > 0) {
           const table = renderer.createTable(tableRows);
@@ -485,6 +501,24 @@ async function convertMarkdownToDocx(inputPath, outputPath, imagesDir) {
           }
         }
         tableRows = [];
+      } else if (isNextLineSeparator) {
+        // Next line is a separator - check if it starts a new table
+        const lineAfterSeparator = lines[i + 2] || '';
+        if (lineAfterSeparator.includes('|') && lineAfterSeparator.trim().startsWith('|')) {
+          const nextCells = lineAfterSeparator.split('|').slice(1, -1).map(c => c.trim());
+          if (nextCells.length !== cells.length) {
+            // Different column count - close current table
+            if (tableRows.length > 0) {
+              const table = renderer.createTable(tableRows);
+              if (table) {
+                renderer.children.push(table);
+                renderer.children.push(new Paragraph({ spacing: { after: 200 }, children: [] }));
+                console.log(`📊 표 분리 감지 (구분선 후): ${cells.length}열 → ${nextCells.length}열`);
+              }
+            }
+            tableRows = [];
+          }
+        }
       }
       i++;
       continue;
