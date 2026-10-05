@@ -19,3 +19,13 @@ node_modules/
 
 # Test outputs
 test_*.png
+
+# 고객 자료 하드 레이어 (2026-10-05) — 원격이 PUBLIC. 폴더 직속 공고 PDF·템플릿만 추적 대상
+Company_docs/
+SSOT_docs/*/
+Program_docs/*/
+outputs/*/
+!outputs/LearnAI_예비창업패키지/
+tasks/
+.stfolder/
+.stignore
